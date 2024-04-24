@@ -31,6 +31,13 @@ const addBody = (body, x, y, width, height, angle = 0) => {
 };
 
 const canvas = document.querySelector("canvas");
+const rotate = (ctx, x, y, width, height, angle) => {
+	const centerX = x + width / 2;
+	const centerY = y + height / 2;
+	ctx.translate(centerX, centerY);
+	ctx.rotate((angle * Math.PI) / 180);
+	ctx.translate(-centerX, -centerY);
+};
 let x = 400;
 if (canvas) {
 	canvas.height = window.innerHeight;
@@ -48,25 +55,19 @@ if (canvas) {
 				const body = bodies[i];
 				const bodyArray = body.bodyArray;
 				ctx.fillStyle = "white";
-				// 				if (bodyArray[4]) {
-				// 					const centerX = bodyArray[0] + bodyArray[2] / 2;
-				// 					const centerY = bodyArray[1] + bodyArray[3] / 2;
-				// 					ctx.translate(centerX, centerY);
-				// 					ctx.rotate((bodyArray[4] * Math.PI) / 180);
-				// 					ctx.fillRect(bodyArray[0], bodyArray[1], bodyArray[2], bodyArray[3]);
-				// ~					ctx.fillStyle = "red";
-				// 					ctx.fillRect(centerX - 2, centerY - 2, 4, 4);
-				// 					ctx.fillStyle = "white";
-				// 					ctx.rotate(0);
-				// 					ctx.translate(-centerX, -centerY);
-				// 				} else {
-				ctx.fillRect(bodyArray[0], bodyArray[1], bodyArray[2], bodyArray[3]);
 				const centerX = bodyArray[0] + bodyArray[2] / 2;
 				const centerY = bodyArray[1] + bodyArray[3] / 2;
+				ctx.save();
+				ctx.fillStyle = "white";
+				if (bodyArray[4]) {
+					rotate(ctx, ...bodyArray);
+				}
+				ctx.fillRect(bodyArray[0], bodyArray[1], bodyArray[2], bodyArray[3]);
+				ctx.restore();
+
 				ctx.fillStyle = "red";
 				ctx.fillRect(centerX - 2, centerY - 2, 4, 4);
 				ctx.fillStyle = "white";
-				// }
 			}
 			window.requestAnimationFrame(loop);
 		};

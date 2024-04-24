@@ -58,7 +58,7 @@ const loop = (timestamp: number) => {
 		if (bodyArray) {
 			Atomics.store(bodyArray, 0, body.position.x);
 			Atomics.store(bodyArray, 1, body.position.y);
-			Atomics.store(bodyArray, 4, body.angle);
+			Atomics.store(bodyArray, 4, Math.floor(body.angle * (180 / Math.PI)));
 		}
 	}
 	self.requestAnimationFrame(loop);
