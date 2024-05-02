@@ -12,14 +12,15 @@ const bodyMap = new WeakMap();
 const bodies = [];
 const addBody = (body, x, y, width, height, angle = 0, isStatic = false) => {
 	const sharedBuffer = new SharedArrayBuffer(
-		Float32Array.BYTES_PER_ELEMENT * 5
+		Float32Array.BYTES_PER_ELEMENT * 6
 	);
 	const bodyArr = new Float32Array(sharedBuffer);
-	bodyArr[0] = x;
-	bodyArr[1] = y;
-	bodyArr[2] = width;
-	bodyArr[3] = height;
-	bodyArr[4] = angle;
+	bodyArr[0] = 0;
+	bodyArr[1] = x;
+	bodyArr[2] = y;
+	bodyArr[3] = width;
+	bodyArr[4] = height;
+	bodyArr[5] = angle;
 	bodies.push({
 		type: body,
 		bodyArray: bodyArr,
@@ -33,20 +34,22 @@ const addBody = (body, x, y, width, height, angle = 0, isStatic = false) => {
 };
 // Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
 const canvas = document.querySelector("canvas");
-const rotate = (ctx, x, y, width, height, angle) => {
+const rotate = (ctx, added, x, y, width, height, angle) => {
 	const centerX = x + width / 2;
 	const centerY = y + height / 2;
 	ctx.translate(centerX, centerY);
 	ctx.rotate((angle * Math.PI) / 180);
 	ctx.translate(-centerX, -centerY);
 };
-let x = 400;
+let x = 0;
+
 if (canvas) {
+	addBody("rectangle", x, 550, 810, 60, 0);
 	addBody("rectangle", 400, 610, 810, 60, 0, true);
 	canvas.height = window.innerHeight;
 	canvas.width = window.innerWidth;
-	canvas.addEventListener("click", () => {
-		addBody("rectangle", x, 200, 80, 80);
+	canvas.addEventListener("click", ($event) => {
+		addBody("rectangle", $event.clientX - 40, $event.clientY - 40, 80, 80);
 		x += 25;
 	});
 	const ctx = canvas.getContext("2d");
@@ -56,16 +59,19 @@ if (canvas) {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			for (let i = 0; i < bodies.length; i++) {
 				const body = bodies[i];
-				const bodyArray = body.bodyArray;
+				const [added, x, y, width, height, angle] = body.bodyArray;
+				if (!added) {
+					continue;
+				}
 				ctx.fillStyle = "white";
-				const centerX = bodyArray[0] + bodyArray[2] / 2;
-				const centerY = bodyArray[1] + bodyArray[3] / 2;
+				const centerX = x + width / 2;
+				const centerY = y + height / 2;
 				ctx.save();
 				ctx.fillStyle = "white";
-				if (bodyArray[4]) {
-					rotate(ctx, ...bodyArray);
+				if (angle) {
+					rotate(ctx, ...body.bodyArray);
 				}
-				ctx.fillRect(bodyArray[0], bodyArray[1], bodyArray[2], bodyArray[3]);
+				ctx.fillRect(x, y, width, height);
 				ctx.restore();
 
 				ctx.fillStyle = "red";

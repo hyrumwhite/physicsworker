@@ -9,37 +9,26 @@ const Engine = Matter.Engine,
 // create an engine
 const engine = Engine.create();
 
-// create a renderer
-// const render = Render.create({
-// 	element: document.body,
-// 	engine: engine,
-// });
-
-// create two boxes and a ground
-// const ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
-// add all of the bodies to the world
-// Composite.add(engine.world, [ground]);
 type AddMessage = {
 	type: "add";
 	body: keyof Bodies;
 	isStatic: boolean;
 	buffer: SharedArrayBuffer;
 };
-
 const bodyMap = new WeakMap<Matter.Body, Float32Array>();
 self.addEventListener("message", ($event) => {
 	const message = $event.data as AddMessage;
 	if (message.type === "add") {
 		const sharedArray = new Float32Array(message.buffer);
-		console.log(message.isStatic);
+		const [added, x, y, width, height] = sharedArray;
 		const body = Bodies[message.body](
-			sharedArray[0],
-			sharedArray[1],
-			sharedArray[2],
-			sharedArray[3],
+			x + width / 2,
+			y + height / 2,
+			width,
+			height,
 			{ isStatic: message.isStatic }
-		) as Bodies.Body;
-		body.angle = sharedArray[4];
+		) as Matter.Body;
+		Body.setAngle(body, sharedArray[5]);
 		bodyMap.set(body, sharedArray);
 		Composite.add(engine.world, body);
 	}
@@ -47,7 +36,8 @@ self.addEventListener("message", ($event) => {
 
 // run the renderer
 // Render.run(render);
-
+// const rect = Bodies.rectangle(0,0,10,10)
+// rect.an
 let lastTime = performance.now();
 const loop = (timestamp: number) => {
 	const delta = timestamp - lastTime;
@@ -58,12 +48,10 @@ const loop = (timestamp: number) => {
 		const body = allBodies[i];
 		const bodyArray = bodyMap.get(body);
 		if (bodyArray) {
-			bodyArray[0] = body.position.x;
-			bodyArray[1] = body.position.y;
-			bodyArray[4] = body.angle * (180 / Math.PI);
-			// Atomics.store(bodyArray, 0, body.position.x);
-			// Atomics.store(bodyArray, 1, body.position.y);
-			// Atomics.store(bodyArray, 4, Math.floor(body.angle * (180 / Math.PI)));
+			bodyArray[0] = 1;
+			bodyArray[1] = body.position.x - bodyArray[3] / 2;
+			bodyArray[2] = body.position.y - bodyArray[4] / 2;
+			bodyArray[5] = body.angle * (180 / Math.PI);
 		}
 	}
 	self.requestAnimationFrame(loop);
