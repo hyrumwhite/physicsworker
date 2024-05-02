@@ -16,9 +16,9 @@ const engine = Engine.create();
 // });
 
 // create two boxes and a ground
-const ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
+// const ground = Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
 // add all of the bodies to the world
-Composite.add(engine.world, [ground]);
+// Composite.add(engine.world, [ground]);
 type AddMessage = {
 	type: "add";
 	body: keyof Bodies;
@@ -26,16 +26,18 @@ type AddMessage = {
 	buffer: SharedArrayBuffer;
 };
 
-const bodyMap = new WeakMap<Matter.Body, Int32Array>();
+const bodyMap = new WeakMap<Matter.Body, Float32Array>();
 self.addEventListener("message", ($event) => {
 	const message = $event.data as AddMessage;
 	if (message.type === "add") {
-		const sharedArray = new Int32Array(message.buffer);
+		const sharedArray = new Float32Array(message.buffer);
+		console.log(message.isStatic);
 		const body = Bodies[message.body](
 			sharedArray[0],
 			sharedArray[1],
 			sharedArray[2],
-			sharedArray[3]
+			sharedArray[3],
+			{ isStatic: message.isStatic }
 		) as Bodies.Body;
 		body.angle = sharedArray[4];
 		bodyMap.set(body, sharedArray);
@@ -56,9 +58,12 @@ const loop = (timestamp: number) => {
 		const body = allBodies[i];
 		const bodyArray = bodyMap.get(body);
 		if (bodyArray) {
-			Atomics.store(bodyArray, 0, body.position.x);
-			Atomics.store(bodyArray, 1, body.position.y);
-			Atomics.store(bodyArray, 4, Math.floor(body.angle * (180 / Math.PI)));
+			bodyArray[0] = body.position.x;
+			bodyArray[1] = body.position.y;
+			bodyArray[4] = body.angle * (180 / Math.PI);
+			// Atomics.store(bodyArray, 0, body.position.x);
+			// Atomics.store(bodyArray, 1, body.position.y);
+			// Atomics.store(bodyArray, 4, Math.floor(body.angle * (180 / Math.PI)));
 		}
 	}
 	self.requestAnimationFrame(loop);
@@ -66,7 +71,7 @@ const loop = (timestamp: number) => {
 loop();
 
 // self.addEventListener("message", ($event) => {
-// 	const sharedArray = new Int32Array($event.data);
+// 	const sharedArray = new Float32Array($event.data);
 // 	let counter = 0;
 // 	setInterval(() => {
 // 		counter += 1;

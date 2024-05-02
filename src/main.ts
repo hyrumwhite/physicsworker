@@ -2,17 +2,19 @@ import "./style.css";
 
 import PhysicsWorker from "./physics?worker";
 
-const sharedBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 10);
-const sharedArray = new Int32Array(sharedBuffer);
+const sharedBuffer = new SharedArrayBuffer(Float32Array.BYTES_PER_ELEMENT * 10);
+const sharedArray = new Float32Array(sharedBuffer);
 
 const physicsWorker = new PhysicsWorker();
 // physicsWorker.postMessage(sharedBuffer);
 
 const bodyMap = new WeakMap();
 const bodies = [];
-const addBody = (body, x, y, width, height, angle = 0) => {
-	const sharedBuffer = new SharedArrayBuffer(Int32Array.BYTES_PER_ELEMENT * 5);
-	const bodyArr = new Int32Array(sharedBuffer);
+const addBody = (body, x, y, width, height, angle = 0, isStatic = false) => {
+	const sharedBuffer = new SharedArrayBuffer(
+		Float32Array.BYTES_PER_ELEMENT * 5
+	);
+	const bodyArr = new Float32Array(sharedBuffer);
 	bodyArr[0] = x;
 	bodyArr[1] = y;
 	bodyArr[2] = width;
@@ -25,11 +27,11 @@ const addBody = (body, x, y, width, height, angle = 0) => {
 	physicsWorker.postMessage({
 		type: "add",
 		body: body,
-		isStatic: false,
+		isStatic,
 		buffer: sharedBuffer,
 	});
 };
-
+// Bodies.rectangle(400, 610, 810, 60, { isStatic: true });
 const canvas = document.querySelector("canvas");
 const rotate = (ctx, x, y, width, height, angle) => {
 	const centerX = x + width / 2;
@@ -40,6 +42,7 @@ const rotate = (ctx, x, y, width, height, angle) => {
 };
 let x = 400;
 if (canvas) {
+	addBody("rectangle", 400, 610, 810, 60, 0, true);
 	canvas.height = window.innerHeight;
 	canvas.width = window.innerWidth;
 	canvas.addEventListener("click", () => {
