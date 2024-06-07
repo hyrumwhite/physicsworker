@@ -1,5 +1,14 @@
-const ctx = canvas.getContext("2d");
+const bodies = [];
+
 let ctx: CanvasRenderingContext2D | null = null;
+let canvas: OffscreenCanvas | null = null;
+const rotate = (ctx, added, x, y, width, height, angle) => {
+	const centerX = x + width / 2;
+	const centerY = y + height / 2;
+	ctx.translate(centerX, centerY);
+	ctx.rotate((angle * Math.PI) / 180);
+	ctx.translate(-centerX, -centerY);
+};
 const loop = () => {
 	if (ctx) {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -25,21 +34,31 @@ const loop = () => {
 			ctx.fillStyle = "white";
 		}
 	}
-	window.requestAnimationFrame(loop);
+	requestAnimationFrame(loop);
 };
-window.requestAnimationFrame(loop);
+requestAnimationFrame(loop);
 
 self.addEventListener(
 	"message",
-	($event: MessageEvent<{ type: string; canvas: HTMLCanvasElement }>) => {
-		if ($event.data.type === "canvas_transfer") {
-			const canvas = $event.data.canvas;
+	(
+		$event: MessageEvent<{
+			type: string;
+			canvas: HTMLCanvasElement;
+			buffer: SharedArrayBuffer;
+			body: string;
+		}>
+	) => {
+		const message = $event.data;
+		if (message.type === "canvas_transfer") {
+			canvas = message.canvas;
+			ctx = canvas.getContext("2d");
 		}
-
-		// Use the canvas object here
-		// For example, you can draw on the canvas using its rendering context:
-		const ctx = canvas.getContext("2d");
-		ctx.fillStyle = "red";
-		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		if (message.type === "add_object") {
+			const sharedArray = new Float32Array(message.buffer);
+			bodies.push({
+				body: message.body,
+				bodyArray: sharedArray,
+			});
+		}
 	}
 );
