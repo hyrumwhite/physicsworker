@@ -1,4 +1,4 @@
-const bodies = [];
+const bodies: { body: string; bodyArray: Float32Array }[] = [];
 
 let ctx: CanvasRenderingContext2D | null = null;
 let canvas: OffscreenCanvas | null = null;
@@ -8,6 +8,19 @@ const rotate = (ctx, added, x, y, width, height, angle) => {
 	ctx.translate(centerX, centerY);
 	ctx.rotate((angle * Math.PI) / 180);
 	ctx.translate(-centerX, -centerY);
+};
+const drawRectangle = (bodyArray: Float32Array) => {
+	const [added, x, y, width, height, angle] = bodyArray;
+	ctx.fillStyle = "white";
+	const centerX = x + width / 2;
+	const centerY = y + height / 2;
+	ctx.save();
+	ctx.fillStyle = "white";
+	if (angle) {
+		rotate(ctx, ...body.bodyArray);
+	}
+	ctx.fillRect(x, y, width, height);
+	ctx.restore();
 };
 const loop = () => {
 	if (ctx) {
