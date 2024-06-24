@@ -5,8 +5,8 @@ export type CommonBodyProps = {
 	zIndex?: number;
 	isStatic?: boolean;
 };
-type BodyConstructorParams = {
-	shape: "circle" | "rectangle" | "trapezoid" | "polygon" | "fromVertices";
+export type BodyConstructorParams = {
+	shape: "circle" | "rectangle" | "trapezoid" | "polygon";
 	width?: number;
 	height?: number;
 	sides?: number;
