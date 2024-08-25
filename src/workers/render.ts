@@ -1,7 +1,12 @@
+import { Application } from "pixi.js";
+
+const app = new Application();
+
 const bodies: { body: string; bodyArray: Float32Array }[] = [];
 
 let ctx: CanvasRenderingContext2D | null = null;
 let canvas: OffscreenCanvas | null = null;
+
 const rotate = (ctx, added, x, y, width, height, angle) => {
 	const centerX = x + width / 2;
 	const centerY = y + height / 2;
@@ -51,27 +56,36 @@ const loop = () => {
 };
 requestAnimationFrame(loop);
 
+type CanvasTransferMessage = {
+	type: string;
+	canvas: HTMLCanvasElement;
+};
+
+type AddObjectMessage = {
+	type: string;
+	buffer: SharedArrayBuffer;
+	sprite: string;
+};
+
+const handlers = {
+	canvas_transfer({ canvas }: CanvasTransferMessage) {
+		app.init({
+			antialias: false,
+			canvas,
+		});
+	},
+	add_object({ buffer, sprite }: AddObjectMessage) {
+		const sharedArray = new Float32Array(message.buffer);
+		bodies.push({
+			body: message.body,
+			bodyArray: sharedArray,
+		});
+	},
+};
+
 self.addEventListener(
 	"message",
-	(
-		$event: MessageEvent<{
-			type: string;
-			canvas: HTMLCanvasElement;
-			buffer: SharedArrayBuffer;
-			body: string;
-		}>
-	) => {
-		const message = $event.data;
-		if (message.type === "canvas_transfer") {
-			canvas = message.canvas;
-			ctx = canvas.getContext("2d");
-		}
-		if (message.type === "add_object") {
-			const sharedArray = new Float32Array(message.buffer);
-			bodies.push({
-				body: message.body,
-				bodyArray: sharedArray,
-			});
-		}
+	($event: MessageEvent<AddObjectMessage, CanvasTransferMessage>) => {
+		handlers[$event.data.type]($event.data);
 	}
 );

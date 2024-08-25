@@ -1,7 +1,7 @@
-export const drawRectangle = (
+export const drawCircle = (
 	ctx: OffscreenCanvasRenderingContext2D,
 	x: number,
 	y: number,
-	width: number,
-	height: number
+	radius: number,
+	angle: number
 ) => {};
